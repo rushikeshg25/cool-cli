@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/rushikeshg25/cool-wire/wire"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -18,6 +20,13 @@ var (
 )
 
 func Run(host string, port int) {
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), grpc.WithInsecure())
+	if err != nil {
+		fmt.Println("Failed to connect to Cool server")
+		return
+	}
+	defer conn.Close()
+	client := wire.NewWireServiceClient(conn)
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:      fmt.Sprintf("cool@%s:%s> ", boldBlue(host), boldBlue(port)),
 		HistoryFile: os.ExpandEnv("$HOME/.dicedb_history"),
@@ -56,10 +65,16 @@ func Run(host string, port int) {
 		q := wire.Query{
 			Query: query,
 		}
+		res, err := client.SendQuery(context.Background(), &q)
+		renderResponse(res)
 	}
 }
 
 func parseQuery(input string) string {
 	//TODO: Add more validations
 	return strings.TrimSpace(input)
+}
+
+func renderResponse(res *wire.Response) {
+	fmt.Println(res)
 }
