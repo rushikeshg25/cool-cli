@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cool-cli/core"
 	"fmt"
 	"os"
 
@@ -18,9 +19,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		host, _ := cmd.Flags().GetString("host")
 		port, _ := cmd.Flags().GetInt("port")
-		fmt.Println("Starting cool-cli")
-		fmt.Println("Host: ", host)
-		fmt.Println("Port: ", port)
+		core.Run(host, port)
 	},
 }
 
